@@ -1,0 +1,4 @@
+config.ini
+env/
+__pycache__
+**.log
