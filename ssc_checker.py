@@ -6,11 +6,11 @@ from selenium.common.exceptions import WebDriverException
 
 def getGrades(username, password):
     options = Options()
-#    options.add_argument("--headless")
+    options.add_argument("--headless")
 
     browser = webdriver.Firefox(firefox_options=options)
     browser.delete_all_cookies()
-    browser.implicitly_wait(1)
+    browser.implicitly_wait(10)
 
     grades = []
 
