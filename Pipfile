@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[dev-packages]
+
+[packages]
+selenium = "*"
+sqlalchemy = "*"
+python-telegram-bot = "*"
+imgkit = "*"
+pytablewriter = "*"
+"psycopg2" = "*"
+"psycopg2-binary" = "*"
+
+[requires]
+python_version = "3.6"
