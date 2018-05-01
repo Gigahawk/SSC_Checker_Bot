@@ -1,0 +1,13 @@
+[Unit]
+Description=Telegram SSC Checker Bot
+After=network.target
+
+[Service]
+User=user
+Restart=always
+Type=simple
+WorkingDirectory=/path/to/sscbot
+ExecStart=/usr/local/bin/pipenv run python /path/to/sscbot/app.py
+
+[Install]
+WantedBy=multi-user.target
