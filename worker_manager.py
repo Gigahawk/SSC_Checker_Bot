@@ -95,6 +95,7 @@ def getGradesForUserCallback(future):
             if user.is_checking:
                 user.is_checking = still_checking
                 session.commit()
+                tg_bot.send_message(chat_id=future.arg.telegram_id, text='*Congratulations, it appears that all of your marks have been released!*', parse_mode="Markdown")
             session.close()
     else:
         print('future not finished')
