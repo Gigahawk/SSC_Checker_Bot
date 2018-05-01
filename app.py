@@ -218,7 +218,7 @@ def request(bot,update,args):
 
         table = writer.stream.getvalue()
         print(table)
-        imgkit.from_string(table,f'images/{telegram_id}.png', css='table.css')
+        imgkit.from_string(table,f'images/{telegram_id}.png', css='table.css', options={'xvfb': ''})
 
         #bot.send_message(chat_id=telegram_id, text=table, parse_mode="HTML")
         bot.send_photo(chat_id=telegram_id, photo=open(f'images/{telegram_id}.png', 'rb'))
