@@ -6,7 +6,7 @@ from selenium.common.exceptions import WebDriverException
 
 def getGrades(username, password):
     options = Options()
-    options.add_argument("--headless")
+#    options.add_argument("--headless")
 
     browser = webdriver.Firefox(firefox_options=options)
     browser.delete_all_cookies()
@@ -33,6 +33,7 @@ def getGrades(username, password):
             navbar = browser.find_element_by_xpath('//*[@id="tabs"]/ul')
         except NoSuchElementException:
             print("Nav buttons not found, is SSC down?")
+            browser.quit()
             return None
 
         yearButton = navbar.find_element_by_xpath('//a[@href="#tabs-all"]')
@@ -49,6 +50,7 @@ def getGrades(username, password):
             table = browser.find_element_by_tag_name('tbody')
         except NoSuchElementException:
             print("Main table not found, is SSC down?")
+            browser.quit()
             return None
 
         courses = []
@@ -93,8 +95,11 @@ def getGrades(username, password):
 
             grades.append(data)
 
+        browser.quit()
         return grades
+
 
     except WebDriverException:
         print("Error: WebDriverException!")
+        browser.quit()
         return None
