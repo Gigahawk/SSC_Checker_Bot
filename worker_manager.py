@@ -30,6 +30,7 @@ def getGradesForUserCallback(future):
             Session = sessionmaker(bind=db_engine)
             session = Session()
 
+            still_checking = False
 
             for grade in grades:
                 print(grade)
@@ -40,6 +41,7 @@ def getGradesForUserCallback(future):
                 try:
                     grade_p = int(grade['grade'])
                 except ValueError:
+                    still_checking = True
                     continue
                 #grade_p = int(grade['grade']) if grade['grade'] != ' ' else -1
                 letter = grade['letter']
@@ -89,6 +91,11 @@ def getGradesForUserCallback(future):
 
                             tg_bot.send_message(chat_id=future.arg.telegram_id, text=msg, parse_mode="Markdown")
                             break
+            user = session.query(User).filter_by(telegram_id=future.arg.telegram_id).first()
+            if user.is_checking:
+                user.is_checking = still_checking
+                session.commit()
+            session.close()
     else:
         print('future not finished')
 
@@ -106,7 +113,7 @@ def startWorkers(engine, bot, max_threads):
 
     print('Starting workers')
     while True:
-        users = session.query(User)
+        users = session.query(User).filter_by(is_checking=True)
 
         wait_for = []
 

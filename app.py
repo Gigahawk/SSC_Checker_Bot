@@ -230,7 +230,51 @@ def request(bot,update,args):
     else:
         bot.send_message(chat_id=telegram_id, text="Course not found")
 
+def checking(bot,update,args):
+    telegram_id = update['message']['chat']['id']
+    session = Session()
+    user = session.query(User).filter_by(telegram_id=telegram_id).first()
 
+    error_msg = """Error, to enable grades checking on your account please use the command:
+
+```
+/checking [on/off]
+```
+
+*WARNING: Your account information will be stored in plain text, use this bot at your own risk*"""
+
+    #status_msg = f'SSC Bot is currently{" not" if not user.is_checking else ""} checking for your grades'
+    status_msg = 'SSC Bot is currently{} checking for your grades'
+
+    if not args:
+        bot.send_message(chat_id=telegram_id, text=status_msg.format(" not" if not user.is_checking else ""))
+        session.close()
+        return
+
+    if len(args) != 1:
+        bot.send_message(chat_id=telegram_id, text=error_msg, parse_mode="Markdown")
+        session.close()
+        return
+
+    yes = {'yes', 'y', 'ye', 'on', 'true', '1'}
+    no = {'no', 'n', 'off', 'false', '0'}
+
+    if args[0].lower() in yes:
+        user.is_checking = 1
+        session.commit()
+        bot.send_message(chat_id=telegram_id, text=status_msg.format(" not" if not user.is_checking else ""))
+        session.close()
+        return
+    elif args[0].lower() in no:
+        user.is_checking = 0
+        session.commit()
+        bot.send_message(chat_id=telegram_id, text=status_msg.format(" not" if not user.is_checking else ""))
+        session.close()
+        return
+    else:
+        bot.send_message(chat_id=telegram_id, text=error_msg, parse_mode="Markdown")
+        session.close()
+        return
 
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
@@ -246,6 +290,9 @@ dispatcher.add_handler(unregister_handler)
 
 request_handler = CommandHandler('request', request, pass_args=True)
 dispatcher.add_handler(request_handler)
+
+checking_handler = CommandHandler('checking', checking, pass_args=True)
+dispatcher.add_handler(checking_handler)
 
 executor = futures.ThreadPoolExecutor(max_workers = 2)
 wait_for = [executor.submit(updater.start_polling), executor.submit(startWorkers, engine,bot, int(config['ssc_checker']['threads']))]

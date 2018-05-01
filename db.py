@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Column, String, Integer, SmallInteger, Float, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Integer, SmallInteger, Float, Boolean, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -41,11 +41,14 @@ class User(base):
     ssc_username = Column('ssc_username', String)
     ssc_password = Column('ssc_password', String)
 
+    is_checking = Column('is_checking', Boolean)
+
     def __init__(self, telegram_id, username, ssc_username, ssc_password):
         self.telegram_id  = telegram_id
         self.username = username
         self.ssc_username = ssc_username
         self.ssc_password = ssc_password
+        self.is_checking = True
 
     def __repr__(self):
         return f'User with name {self.username} attached to SSC Account {self.ssc_username}'
