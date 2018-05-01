@@ -21,8 +21,6 @@ from six import StringIO
 
 config = ConfigParser()
 
-print(config)
-
 if not config.read('config.ini'):
     print('Config file not found, generating')
     GenerateConfig()
@@ -294,10 +292,13 @@ dispatcher.add_handler(request_handler)
 checking_handler = CommandHandler('checking', checking, pass_args=True)
 dispatcher.add_handler(checking_handler)
 
-executor = futures.ThreadPoolExecutor(max_workers = 2)
-wait_for = [executor.submit(updater.start_polling), executor.submit(startWorkers, engine,bot, int(config['ssc_checker']['threads']))]
-#updater.start_polling()
-print(futures.wait(wait_for))
+def run():
+    executor = futures.ThreadPoolExecutor(max_workers = 2)
+    wait_for = [executor.submit(updater.start_polling), executor.submit(startWorkers, engine,bot, int(config['ssc_checker']['threads']))]
+    print(futures.wait(wait_for))
+
+if __name__ == "__main__":
+    run()
 
 
 
