@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy import Column, String, Integer, SmallInteger, Float, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from datetime import datetime, MINYEAR
 
 def getDatabaseUrl(settings):
@@ -43,6 +43,9 @@ class User(base):
     ssc_password = Column('ssc_password', String)
 
     is_checking = Column('is_checking', Boolean)
+
+    statuses = relationship("Status", cascade="all,delete", backref="user")
+    grades = relationship("Grade", cascade="all,delete", backref="user")
 
     def __init__(self, telegram_id, username, ssc_username, ssc_password):
         self.telegram_id  = telegram_id
