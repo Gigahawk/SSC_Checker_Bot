@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
-from sqlalchemy import Column, String, Integer, SmallInteger, Float, Boolean, ForeignKey, UniqueConstraint
+from sqlalchemy import Column, String, Integer, SmallInteger, Float, Boolean, DateTime, ForeignKey, UniqueConstraint
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime, MINYEAR
 
 def getDatabaseUrl(settings):
     type = settings['type']
@@ -52,6 +53,24 @@ class User(base):
 
     def __repr__(self):
         return f'User with name {self.username} attached to SSC Account {self.ssc_username}'
+
+class Status(base):
+    __tablename__ = 'status'
+
+    id = Column('id', Integer, primary_key=True)
+    user_id = Column('user_id',Integer, ForeignKey('user.telegram_id'))
+    success = Column('success', Boolean)
+    time = Column('time', DateTime)
+    msg = Column('msg', String(100))
+
+    def __init__(self, id):
+        self.user_id = id
+        self.success = False
+        self.time = datetime.fromtimestamp(0)
+        msg = ""
+
+    def __repr__(self):
+        return f'UserID {self.id}\'s last check at {self.time}was {"successful" if self.success else "not successful"}'
 
 class Grade(base):
     __tablename__ = 'grade'

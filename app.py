@@ -6,7 +6,7 @@ from worker_manager import startWorkers
 from ssc_config import GenerateConfig
 
 from db import getDatabaseUrl, gen_engine
-from db import User, Grade
+from db import User, Grade, Status
 from sqlalchemy.orm import sessionmaker, relationship
 
 import telegram
@@ -97,7 +97,9 @@ To update your account information please use the command:
         return
 
     user = User(telegram_id, username, ssc_username, ssc_password)
+    status = Status(telegram_id)
     session.add(user)
+    session.add(status)
     session.commit()
     session.close()
 
@@ -274,6 +276,23 @@ def checking(bot,update,args):
         session.close()
         return
 
+def status(bot, update):
+    telegram_id = update['message']['chat']['id']
+    session = Session()
+
+    status = session.query(Status).filter_by(user_id=telegram_id).first()
+    if status.success:
+        status_msg = f"Your last grades check at {status.time.strftime('%Y-%m-%d, %H:%M:%S')} was successful"
+    else:
+        status_msg = f"Your last grades check at {status.time.strftime('%Y-%m-%d, %H:%M:%S')} encountered an error: {status.msg}"
+
+    session.close()
+
+    telegram_id = update['message']['chat']['id']
+
+    bot.send_message(chat_id=telegram_id, text=status_msg, parse_mode="Markdown")
+    return
+
 start_handler = CommandHandler('start', start)
 dispatcher.add_handler(start_handler)
 
@@ -291,6 +310,9 @@ dispatcher.add_handler(request_handler)
 
 checking_handler = CommandHandler('checking', checking, pass_args=True)
 dispatcher.add_handler(checking_handler)
+
+status_handler = CommandHandler('status', status)
+dispatcher.add_handler(status_handler)
 
 def run():
     executor = futures.ThreadPoolExecutor(max_workers = 2)

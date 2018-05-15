@@ -4,12 +4,36 @@ from concurrent import futures
 
 from sqlalchemy.orm import sessionmaker, relationship
 
-from db import User, Grade
+from db import User, Grade, Status
 
 import time
 
+from threading import Lock
+from multiprocessing import Process
+from datetime import datetime
+
 db_engine = None
 tg_bot = None
+
+last_check_lock = Lock()
+
+# Probably overkill to use locks for this
+def setLastCheck(id, success, msg):
+    print(f'Updating status for {id}')
+    last_check_lock.acquire()
+    Session = sessionmaker(bind=db_engine)
+    session = Session()
+
+    status = session.query(Status).filter_by(user_id=id).first()
+    status.success = success
+    status.msg = msg
+    status.time = datetime.now()
+
+    session.commit()
+    session.close()
+
+    last_check_lock.release()
+    return
 
 def getGradesForUser(user):
     username = user.ssc_username
@@ -20,12 +44,15 @@ def getGradesForUser(user):
 def getGradesForUserCallback(future):
     if future.cancelled():
         print(f'Grades lookup for {future.arg.username} cancelled')
+        Process(target=setLastCheck, args=(future.arg.telegram_id, False,"Process cancelled")).start()
     elif future.done():
         error = future.exception()
-        if error:
+        if error or not future.result():
+            Process(target=setLastCheck, args=(future.arg.telegram_id, False, error)).start()
             print(f'Grades lookup for {future.arg.username} failed, {error}')
 
         elif future.result():
+            Process(target=setLastCheck, args=(future.arg.telegram_id, True, "Success")).start()
             grades = future.result()
             Session = sessionmaker(bind=db_engine)
             session = Session()
@@ -99,8 +126,8 @@ def getGradesForUserCallback(future):
                     tg_bot.send_message(chat_id=future.arg.telegram_id, text='*Congratulations, it appears that all of your marks have been released!*', parse_mode="Markdown")
             session.close()
     else:
+        Process(target=setLastCheck, args=(False, "Future not finished")).start()
         print('future not finished')
-
 
 def startWorkers(engine, bot, max_threads):
     global db_engine
@@ -130,10 +157,5 @@ def startWorkers(engine, bot, max_threads):
             print(f'main: result: {f.result()}')
 
         time.sleep(5)
-
-
-
-
-
 
 
